@@ -24,7 +24,7 @@ type Friend struct {
 	StatusMessage           string `json:"statusMessage"`
 	Summary                 string `json:"summary"`
 	SummonerID              int64  `json:"summonerId"`
-	Time                    int    `json:"time"`
+	Time                    int64  `json:"time"`
 }
 type Lol struct {
 	AdditionalProp1 string `json:"additionalProp1"`
