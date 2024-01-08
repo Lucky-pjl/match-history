@@ -4,7 +4,7 @@ type GameDetail struct {
 	GameCreation          int64                   `json:"gameCreation"`
 	GameCreationDate      string                  `json:"gameCreationDate"`
 	GameDuration          int                     `json:"gameDuration"`
-	GameID                int                     `json:"gameId"`
+	GameID                int64                   `json:"gameId"`
 	GameMode              string                  `json:"gameMode"`
 	GameType              string                  `json:"gameType"`
 	GameVersion           string                  `json:"gameVersion"`

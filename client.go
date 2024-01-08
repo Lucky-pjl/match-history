@@ -22,7 +22,7 @@ type GameHistoryClient struct {
 	BaseUrl    string
 	Summoner   *common.Summoner
 	Games      []common.Games
-	GameIdList []int
+	GameIdList []int64
 	GameList   []*common.GameDetail
 	FriendList []*common.Friend
 }
@@ -86,7 +86,7 @@ func PrintFriends(friends []*common.Friend) {
 func (g *GameHistoryClient) GetGameDetail() error {
 	gameDetails := make([]*common.GameDetail, 0)
 	for _, id := range g.GameIdList {
-		url := g.BaseUrl + fmt.Sprintf("/lol-match-history/v1/games/%s", strconv.Itoa(id))
+		url := g.BaseUrl + fmt.Sprintf("/lol-match-history/v1/games/%s", strconv.FormatInt(id, 10))
 		request, err := http.NewRequest("GET", url, nil)
 		if err != nil {
 			fmt.Printf("NewRequest err:%s\n", err)
@@ -111,7 +111,7 @@ func (g *GameHistoryClient) GetGameDetail() error {
 }
 
 func (g *GameHistoryClient) GetGameHistory() error {
-	gameIdList := make([]int, 0)
+	gameIdList := make([]int64, 0)
 	for begin, end := 0, 199; end < 2000; {
 		//fmt.Printf("begin=%d,end=%d\n", begin, end)
 		url := g.BaseUrl + fmt.Sprintf("/lol-match-history/v1/products/lol/%s/matches?begIndex=%s&endIndex=%s",
@@ -129,6 +129,7 @@ func (g *GameHistoryClient) GetGameHistory() error {
 		gameHistory := &common.GameHistory{}
 		err = json.Unmarshal(data, gameHistory)
 		if err != nil {
+			fmt.Printf("Unmarshal err:%s\n", err)
 			continue
 		}
 
