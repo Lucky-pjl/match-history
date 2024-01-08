@@ -31,7 +31,15 @@ func (s *ScoreCalculate) FriendToMap() map[string]*common.Friend {
 func (s *ScoreCalculate) ParticipantsToMap(participants []common.Participants) map[int]*common.Participants {
 	pMap := make(map[int]*common.Participants)
 	for _, p := range participants {
-		pMap[p.ParticipantID] = &p
+		newP := &common.Participants{
+			Stats: common.Stats{
+				Kills:   p.Stats.Kills,
+				Deaths:  p.Stats.Deaths,
+				Assists: p.Stats.Assists,
+				Win:     p.Stats.Win,
+			},
+		}
+		pMap[p.ParticipantID] = newP
 	}
 	return pMap
 }
@@ -43,6 +51,8 @@ func (s *ScoreCalculate) Calculate() {
 	games := s.GameList
 	for _, game := range games {
 		pMap := s.ParticipantsToMap(game.Participants)
+		//ss, _ := json.MarshalIndent(pMap, "", "\t")
+		//fmt.Printf("pMap:%s\n", ss)
 		for _, partIdent := range game.ParticipantIdentities {
 
 			name := partIdent.Player.SummonerName
