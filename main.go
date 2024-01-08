@@ -21,7 +21,7 @@ func main() {
 		time.Sleep(time.Minute * 3)
 		return
 	}
-	calculate := NewScoreCalculate(client.GameList, client.FriendList)
+	calculate := NewScoreCalculate(client.Summoner.DisplayName, client.GameList, client.FriendList)
 	calculate.Calculate()
 	calculate.Output()
 

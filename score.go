@@ -7,16 +7,19 @@ import (
 )
 
 type ScoreCalculate struct {
-	GameList   []*common.GameDetail
-	FriendList []*common.Friend
-	ScoreList  []*common.FriendScore
+	SummonerName string
+	MyScore      *common.FriendScore
+	GameList     []*common.GameDetail
+	FriendList   []*common.Friend
+	ScoreList    []*common.FriendScore
 }
 
-func NewScoreCalculate(gameList []*common.GameDetail, friendList []*common.Friend) *ScoreCalculate {
+func NewScoreCalculate(name string, gameList []*common.GameDetail, friendList []*common.Friend) *ScoreCalculate {
 	return &ScoreCalculate{
-		GameList:   gameList,
-		FriendList: friendList,
-		ScoreList:  make([]*common.FriendScore, 0),
+		SummonerName: name,
+		GameList:     gameList,
+		FriendList:   friendList,
+		ScoreList:    make([]*common.FriendScore, 0),
 	}
 }
 
@@ -48,6 +51,7 @@ func (s *ScoreCalculate) Calculate() {
 	fMap := s.FriendToMap()
 	friendScoreMap := make(map[string]*common.FriendScore)
 
+	myScore := &common.FriendScore{}
 	games := s.GameList
 	for _, game := range games {
 		pMap := s.ParticipantsToMap(game.Participants)
@@ -72,6 +76,17 @@ func (s *ScoreCalculate) Calculate() {
 				friendScore.Assists += participants.Stats.Assists
 				friendScore.GameCount++
 			}
+
+			if name == s.SummonerName {
+				participants := pMap[partIdent.ParticipantID]
+				if participants.Stats.Win {
+					myScore.GameWin++
+				}
+				myScore.Kill += participants.Stats.Kills
+				myScore.Death += participants.Stats.Deaths
+				myScore.Assists += participants.Stats.Assists
+				myScore.GameCount++
+			}
 		}
 	}
 
@@ -81,21 +96,15 @@ func (s *ScoreCalculate) Calculate() {
 	friendScoreList := make([]*common.FriendScore, 0)
 	// 计算平均值
 	for _, fs := range friendScoreMap {
-		//if fs.GameCount < 10 {
-		//	continue
-		//}
-		gameCount := float32(fs.GameCount)
-		gameWin := float32(fs.GameWin)
-		kill := float32(fs.Kill)
-		death := float32(fs.Death)
-		assists := float32(fs.Assists)
-
-		fs.WinRate = gameWin / gameCount
-		fs.KillAvg = kill / gameCount
-		fs.DeathAvg = death / gameCount
-		fs.AssistsAvg = assists / gameCount
+		if fs.GameCount < 10 {
+			continue
+		}
+		score(fs)
 		friendScoreList = append(friendScoreList, fs)
 	}
+
+	score(myScore)
+	s.MyScore = myScore
 
 	// 排序
 	sort.Slice(friendScoreList, func(i, j int) bool {
@@ -112,4 +121,21 @@ func (s *ScoreCalculate) Output() {
 		fmt.Printf("场均KDA:%.1f/%.1f/%.1f\t\n", fs.KillAvg, fs.DeathAvg, fs.AssistsAvg)
 	}
 	fmt.Printf("---------------------\n")
+	fmt.Printf("个人战绩:")
+	fmt.Printf("%s  总场次:%d  胜场:%d  胜率:%.2f  ", s.SummonerName,
+		s.MyScore.GameCount, s.MyScore.GameWin, s.MyScore.WinRate)
+	fmt.Printf("场均KDA:%.1f/%.1f/%.1f\t\n", s.MyScore.KillAvg, s.MyScore.DeathAvg, s.MyScore.AssistsAvg)
+}
+
+func score(fs *common.FriendScore) {
+	gameCount := float32(fs.GameCount)
+	gameWin := float32(fs.GameWin)
+	kill := float32(fs.Kill)
+	death := float32(fs.Death)
+	assists := float32(fs.Assists)
+
+	fs.WinRate = gameWin / gameCount
+	fs.KillAvg = kill / gameCount
+	fs.DeathAvg = death / gameCount
+	fs.AssistsAvg = assists / gameCount
 }
